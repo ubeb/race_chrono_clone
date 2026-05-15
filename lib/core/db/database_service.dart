@@ -17,25 +17,43 @@ class DatabaseService {
     return openDatabase(
       join(dbPath, 'telemetry.db'),
       version: 2,
+
       onCreate: (db, version) async {
         await db.execute('''
-          CREATE TABLE sessions(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            started_at INTEGER,
-            ended_at INTEGER
-          )
-        ''');
+      CREATE TABLE sessions(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        started_at INTEGER,
+        ended_at INTEGER
+      )
+    ''');
 
         await db.execute('''
-          CREATE TABLE telemetry(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            session_id INTEGER,
-            timestamp INTEGER,
-            latitude REAL,
-            longitude REAL,
-            speed REAL
-          )
-        ''');
+      CREATE TABLE telemetry(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_id INTEGER,
+        timestamp INTEGER,
+        latitude REAL,
+        longitude REAL,
+        speed REAL
+      )
+    ''');
+      },
+
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('''
+        CREATE TABLE sessions(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          started_at INTEGER,
+          ended_at INTEGER
+        )
+      ''');
+
+          await db.execute('''
+        ALTER TABLE telemetry
+        ADD COLUMN session_id INTEGER
+      ''');
+        }
       },
     );
   }
